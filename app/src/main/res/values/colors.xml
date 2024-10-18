@@ -3,4 +3,10 @@
     <color name="teal_200">#FF03DAC5</color>
     <color name="teal_700">#FF018786</color>
     <!-- 필요에 따라 더 많은 색상을 추가할 수 있습니다. -->
+    <color name="colorPrimary">#A5B68D</color> <!-- Primary 색상 -->
+    <color name="colorPrimaryVariant">#ECDFCC</color> <!-- Primary 변형 색상 -->
+    <color name="colorSecondary">#03DAC5</color> <!-- Secondary 색상 -->
+    <color name="colorBackground">#FCFAEE</color> <!-- 배경 색상 -->
+    <color name="colorText">#000000</color> <!-- 텍스트 색상 -->
+
 </resources>

@@ -7,57 +7,78 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <!-- 이미지 추가 -->
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="150dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginBottom="16dp"
+        android:contentDescription="Description"
+        android:src="@drawable/memory"
+        app:layout_constraintBottom_toTopOf="@id/editTextSentence"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <!-- 영어 문장 입력 -->
     <EditText
         android:id="@+id/editTextSentence"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="Enter an English sentence"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="120dp"
+        android:hint="English"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5" />
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/imageView" />
 
     <!-- 한국어 번역 입력 -->
     <EditText
         android:id="@+id/editTextTranslation"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="Enter the Korean meaning"
-        app:layout_constraintTop_toBottomOf="@id/editTextSentence"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="40dp"
+        android:hint="Mean"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5" />
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/editTextSentence" />
 
     <!-- 문장 저장 버튼 -->
     <Button
         android:id="@+id/buttonSave"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="56dp"
         android:text="Save"
-        app:layout_constraintTop_toBottomOf="@id/editTextTranslation"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/editTextTranslation" />
 
-    <!-- 저장된 문장 보기 버튼 -->
+    <!-- 리스트 버튼을 Save와 Test 사이에 배치 -->
     <Button
         android:id="@+id/buttonList"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="View Saved Sentences"
-        app:layout_constraintTop_toBottomOf="@id/buttonSave"
+        android:layout_marginTop="16dp"
+        android:text="List"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/buttonSave" />
 
     <!-- 테스트 시작 버튼 -->
     <Button
         android:id="@+id/buttonStartTest"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="테스트 시작"
-        app:layout_constraintTop_toBottomOf="@id/buttonList"
+        android:layout_marginTop="16dp"
+        android:text="Test"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintTop_toBottomOf="@id/buttonList" />
 
     <!-- 영어 문장 표시 -->
     <TextView
@@ -68,7 +89,7 @@
         android:visibility="gone"
         app:layout_constraintTop_toBottomOf="@id/buttonStartTest"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <!-- 답지 확인 버튼 -->
     <Button
@@ -79,7 +100,7 @@
         android:visibility="gone"
         app:layout_constraintTop_toBottomOf="@id/textViewQuestion"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <!-- 한국어 번역 표시 -->
     <TextView
@@ -90,6 +111,6 @@
         android:visibility="gone"
         app:layout_constraintTop_toBottomOf="@id/buttonShowAnswer"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
