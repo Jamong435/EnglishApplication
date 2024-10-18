@@ -2,6 +2,7 @@ package com.no.mypocketenglish;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -10,6 +11,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -140,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
         buttonStartTest.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startTest();  // 최신 데이터를 반영해 테스트 시작
+                showTestDialog();  // 다이얼로그 형식으로 테스트 시작
             }
         });
 
@@ -148,20 +150,59 @@ public class MainActivity extends AppCompatActivity {
         buttonShowAnswer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showAnswer();
+                showAnswer(textViewAnswer);
             }
         });
     }
 
-    // 테스트 시작 시 문장을 무작위로 선택하고 출력
-    private void startTest() {
+    // 다이얼로그 형식으로 테스트를 보여주는 메서드
+    private void showTestDialog() {
+        // 다이얼로그 생성
+        final Dialog dialog = new Dialog(MainActivity.this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE); // 타이틀 제거
+        dialog.setContentView(R.layout.dialog_test); // 다이얼로그 레이아웃 설정
+
+        // 다이얼로그 내부의 요소들 참조
+        TextView textViewQuestion = dialog.findViewById(R.id.textViewQuestion);
+        Button buttonShowAnswer = dialog.findViewById(R.id.buttonShowAnswer);
+        TextView textViewAnswer = dialog.findViewById(R.id.textViewAnswer);
+        Button buttonNextQuestion = dialog.findViewById(R.id.buttonNextQuestion);  // 다음 문제 버튼
+        Button buttonClose = dialog.findViewById(R.id.buttonClose);
+
+        // 랜덤 문장 선택 후 다이얼로그에 표시
+        startTest(textViewQuestion, textViewAnswer);
+
+        // 답을 보여주는 버튼 클릭 리스너
+        buttonShowAnswer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showAnswer(textViewAnswer);
+            }
+        });
+
+        // 다음 문제를 불러오는 버튼 클릭 리스너
+        buttonNextQuestion.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startTest(textViewQuestion, textViewAnswer);  // 다음 문제로 업데이트
+            }
+        });
+
+        // 다이얼로그 닫기 버튼 클릭 리스너
+        buttonClose.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss(); // 다이얼로그 닫기
+            }
+        });
+
+        dialog.show(); // 다이얼로그 표시
+    }
+
+    // 다이얼로그에서 테스트 문장 시작
+    private void startTest(TextView textViewQuestion, TextView textViewAnswer) {
         sentenceList = loadSentenceSets(); // 최신 데이터를 다시 로드
         resetTestList();  // 테스트 리스트 초기화
-
-        // 남은 문장이 없으면 초기화
-        if (testList.isEmpty()) {
-            resetTestList();
-        }
 
         if (!testList.isEmpty()) {
             int randomIndex = random.nextInt(testList.size());
@@ -171,29 +212,24 @@ public class MainActivity extends AppCompatActivity {
             if (parts.length == 2) {
                 textViewQuestion.setText(parts[0]);  // 영어 문장 표시
                 textViewAnswer.setText("");  // 답은 숨김
-                textViewQuestion.setVisibility(View.VISIBLE);  // 영어 문장 보이게 설정
-                textViewAnswer.setVisibility(View.GONE);  // 답 숨김
-                buttonShowAnswer.setVisibility(View.VISIBLE);  // 답지 확인 버튼 활성화
             } else {
                 textViewQuestion.setText("No valid sentence found.");
-                textViewQuestion.setVisibility(View.VISIBLE);
             }
         } else {
             textViewQuestion.setText("No sentences available.");
-            textViewQuestion.setVisibility(View.VISIBLE);
         }
     }
 
-    // 답을 보여주는 메서드
-    private void showAnswer() {
+    // 다이얼로그에서 답을 보여주는 메서드
+    private void showAnswer(TextView textViewAnswer) {
         if (!currentSentenceSet.isEmpty()) {
             String[] parts = currentSentenceSet.split("///");
             if (parts.length == 2) {
                 textViewAnswer.setText(parts[1]);  // 한국어 뜻 표시
-                textViewAnswer.setVisibility(View.VISIBLE);  // 답 표시
+                textViewAnswer.setVisibility(View.VISIBLE); // 답 보이게 설정
             } else {
                 textViewAnswer.setText("No answer available.");
-                textViewAnswer.setVisibility(View.VISIBLE);
+                textViewAnswer.setVisibility(View.VISIBLE); // 답 보이게 설정
             }
         } else {
             Toast.makeText(this, "No answer available.", Toast.LENGTH_SHORT).show();

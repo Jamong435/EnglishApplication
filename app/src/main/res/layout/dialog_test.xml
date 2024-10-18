@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <!-- 질문을 보여주는 TextView -->
+    <TextView
+        android:id="@+id/textViewQuestion"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Your question will appear here"
+        android:textSize="18sp"
+        android:textColor="@android:color/black"
+        android:layout_marginBottom="16dp"
+        android:gravity="center"/>
+
+    <!-- 답을 보여주는 TextView -->
+    <TextView
+        android:id="@+id/textViewAnswer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Your answer will appear here"
+        android:textSize="18sp"
+        android:textColor="@android:color/holo_green_dark"
+        android:layout_marginBottom="16dp"
+        android:gravity="center"
+        android:visibility="gone"/>
+
+    <!-- 답지 확인 버튼 -->
+    <Button
+        android:id="@+id/buttonShowAnswer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Show Answer"
+        android:padding="12dp"
+        android:backgroundTint="@color/teal_700"
+        android:textColor="@android:color/white"
+        android:layout_gravity="center"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- 다음 문제 버튼 -->
+    <Button
+        android:id="@+id/buttonNextQuestion"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Next Question"
+        android:padding="12dp"
+        android:backgroundTint="@color/teal_700"
+        android:textColor="@android:color/white"
+        android:layout_gravity="center"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- 닫기 버튼 -->
+    <Button
+        android:id="@+id/buttonClose"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Close"
+        android:padding="12dp"
+        android:backgroundTint="@color/teal_700"
+        android:textColor="@android:color/white"
+        android:layout_gravity="center"/>
+
+</LinearLayout>

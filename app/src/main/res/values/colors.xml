@@ -1,5 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <!-- 기존 색상 정의가 있을 수 있으니 추가해줍니다. -->
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <!-- 필요에 따라 더 많은 색상을 추가할 수 있습니다. -->
 </resources>
