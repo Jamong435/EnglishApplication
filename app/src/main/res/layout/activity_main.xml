@@ -1,18 +1,95 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <TextView
+    <!-- 영어 문장 입력 -->
+    <EditText
+        android:id="@+id/editTextSentence"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="Enter an English sentence"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5" />
+
+    <!-- 한국어 번역 입력 -->
+    <EditText
+        android:id="@+id/editTextTranslation"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="Enter the Korean meaning"
+        app:layout_constraintTop_toBottomOf="@id/editTextSentence"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5" />
+
+    <!-- 문장 저장 버튼 -->
+    <Button
+        android:id="@+id/buttonSave"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:text="Save"
+        app:layout_constraintTop_toBottomOf="@id/editTextTranslation"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- 저장된 문장 보기 버튼 -->
+    <Button
+        android:id="@+id/buttonList"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="View Saved Sentences"
+        app:layout_constraintTop_toBottomOf="@id/buttonSave"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- 테스트 시작 버튼 -->
+    <Button
+        android:id="@+id/buttonStartTest"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="테스트 시작"
+        app:layout_constraintTop_toBottomOf="@id/buttonList"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- 영어 문장 표시 -->
+    <TextView
+        android:id="@+id/textViewQuestion"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/buttonStartTest"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- 답지 확인 버튼 -->
+    <Button
+        android:id="@+id/buttonShowAnswer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="답지 확인"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/textViewQuestion"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- 한국어 번역 표시 -->
+    <TextView
+        android:id="@+id/textViewAnswer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/buttonShowAnswer"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
