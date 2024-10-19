@@ -15,6 +15,7 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -91,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
 
         DownloadConditions conditions = new DownloadConditions.Builder().requireWifi().build();
         englishKoreanTranslator.downloadModelIfNeeded(conditions)
-                .addOnSuccessListener(aVoid -> Toast.makeText(MainActivity.this, "Translation model downloaded", Toast.LENGTH_SHORT).show());
+                .addOnSuccessListener(aVoid -> Toast.makeText(MainActivity.this, "How are you doing :)", Toast.LENGTH_SHORT).show());
 
         editTextSentence.addTextChangedListener(new android.text.TextWatcher() {
             @Override
@@ -113,9 +114,9 @@ public class MainActivity extends AppCompatActivity {
                 saveSentenceSet(sentence, translation);
                 editTextSentence.setText("");
                 editTextTranslation.setText("");
-                Toast.makeText(MainActivity.this, "Sentence set saved!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Sentence set saved :) ", Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(MainActivity.this, "Please enter both the sentence and its meaning.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Please enter both the sentence and its meaning :( ", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -179,7 +180,7 @@ public class MainActivity extends AppCompatActivity {
         startGame(textViewQuestion, buttonOption1, buttonOption2, buttonOption3, buttonOption4);
 
         dialog.setOnDismissListener(dialogInterface -> {
-            Toast.makeText(MainActivity.this, "Game closed", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "See you again :) ", Toast.LENGTH_SHORT).show();
         });
 
         if (dialog.getWindow() != null) {
@@ -190,50 +191,63 @@ public class MainActivity extends AppCompatActivity {
         dialog.show();
     }
 
+    private String previousSentenceSet = "";
     private void startGame(TextView textViewQuestion, Button... options) {
-        sentenceList = loadSentenceSets();
-        resetTestList();
+        sentenceList = loadSentenceSets();  // 문제 리스트 로드
+        resetTestList();  // 테스트 리스트 초기화
 
         if (!testList.isEmpty()) {
-            int randomIndex = random.nextInt(testList.size());
-            currentSentenceSet = testList.remove(randomIndex);
+            String currentSentenceSet;
+
+            // 문제 선택 로직: 이전 문제와 같지 않은 문제를 선택
+            do {
+                int randomIndex = random.nextInt(testList.size());
+                currentSentenceSet = testList.remove(randomIndex);
+            } while (currentSentenceSet.equals(previousSentenceSet));  // 이전 문제와 같으면 다시 선택
+
+            // 선택된 문제를 이전 문제로 저장
+            previousSentenceSet = currentSentenceSet;
+
+            // 문제와 답을 분리
             String[] parts = currentSentenceSet.split("///");
-
             if (parts.length == 2) {
-                final String correctAnswer = parts[1];
-                textViewQuestion.setText(parts[0]);
+                final String correctAnswer = parts[1];  // 정답 저장
+                textViewQuestion.setText(parts[0]);  // 문제를 TextView에 표시
 
-                int correctButtonIndex = random.nextInt(4);
+                // 선택지 버튼에 랜덤하게 정답과 오답 배치
+                int correctButtonIndex = random.nextInt(4);  // 정답이 들어갈 버튼 인덱스
                 for (int i = 0; i < options.length; i++) {
                     final int index = i;
                     if (i == correctButtonIndex) {
-                        options[i].setText(correctAnswer);
+                        options[i].setText(correctAnswer);  // 정답 배치
                     } else {
-                        options[i].setText(generateWrongAnswer());
+                        options[i].setText(generateWrongAnswer());  // 오답 배치
                     }
 
+                    // 선택지 클릭 리스너 설정
                     options[i].setOnClickListener(v -> {
                         if (options[index].getText().equals(correctAnswer)) {
-                            currentGameScore++;  // 이번 게임 점수 증가
+                            currentGameScore++;  // 정답일 때 점수 증가
                             totalScore++;  // 총점 증가
-                            saveTotalScore(totalScore);
+                            saveTotalScore(totalScore);  // 점수 저장
                             Toast.makeText(MainActivity.this, "Correct! Total Score: " + totalScore, Toast.LENGTH_SHORT).show();
                         } else {
-                            currentGameScore = 0;  // 틀리면 이번 게임 점수만 0으로 리셋
+                            currentGameScore = 0;  // 오답일 때 이번 게임 점수 리셋
                             Toast.makeText(MainActivity.this, "Wrong answer", Toast.LENGTH_SHORT).show();
                         }
-                        startGame(textViewQuestion, options);
+                        startGame(textViewQuestion, options);  // 다음 문제로 이동
                     });
                 }
             }
         }
     }
 
+    // 오답 생성 메서드 (현재 문제와 다른 오답을 랜덤하게 선택)
     private String generateWrongAnswer() {
         List<String> wrongAnswers = new ArrayList<>(sentenceList);
-        wrongAnswers.remove(currentSentenceSet);
+        wrongAnswers.remove(currentSentenceSet);  // 현재 문제는 오답 리스트에서 제거
         String randomWrongAnswer = wrongAnswers.get(random.nextInt(wrongAnswers.size()));
-        return randomWrongAnswer.split("///")[1];
+        return randomWrongAnswer.split("///")[1];  // 랜덤 오답 반환
     }
 
     private void showTestDialog() {
@@ -307,8 +321,49 @@ public class MainActivity extends AppCompatActivity {
         TextView textViewTotalScore = dialog.findViewById(R.id.textViewTotalScore);
         textViewTotalScore.setText("Total Score: " + totalScore);
 
+        // 이미지 변경을 위한 ImageView 참조
+        ImageView rewardImageView = dialog.findViewById(R.id.rewardImageView);
+
+        // 총점에 따라 다른 이미지 표시
+        if (totalScore >= 100) {
+            rewardImageView.setImageResource(R.drawable.egg4); // 100점 이상
+        } else if (totalScore >= 90) {
+            rewardImageView.setImageResource(R.drawable.egg4);  // 90점 이상
+        } else if (totalScore >= 80) {
+            rewardImageView.setImageResource(R.drawable.egg4);  // 80점 이상
+        } else if (totalScore >= 70) {
+            rewardImageView.setImageResource(R.drawable.egg4);  // 70점 이상
+        } else if (totalScore >= 60) {
+            rewardImageView.setImageResource(R.drawable.egg3);  // 60점 이상
+        } else if (totalScore >= 50) {
+            rewardImageView.setImageResource(R.drawable.egg3);  // 50점 이상
+        } else if (totalScore >= 40) {
+            rewardImageView.setImageResource(R.drawable.egg2);  // 40점 이상
+        } else if (totalScore >= 30) {
+            rewardImageView.setImageResource(R.drawable.egg2);  // 30점 이상
+        } else if (totalScore >= 20) {
+            rewardImageView.setImageResource(R.drawable.egg2);  // 20점 이상
+        } else if (totalScore >= 10) {
+            rewardImageView.setImageResource(R.drawable.egg);  // 10점 이상
+        } else if (totalScore >= 0) {
+            rewardImageView.setImageResource(R.drawable.egg);   // 0점 이상
+        }
+
+        // 닫기 버튼 동작 설정
+        Button buttonCloseDialog = dialog.findViewById(R.id.buttonCloseDialog);
+        buttonCloseDialog.setOnClickListener(v -> dialog.dismiss());  // 다이얼로그 닫기
+
+        // 다이얼로그를 전체 화면으로 설정
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT);
+            dialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        }
+
         dialog.show();
     }
+
+
+
 
     // 문장을 파일에 저장하는 메서드
     private void saveSentenceSet(String sentence, String translation) {
