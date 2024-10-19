@@ -1,8 +1,12 @@
 package com.no.mypocketenglish;
 
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.text.Spannable;
+import android.text.SpannableString;
 import android.text.TextUtils;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -29,9 +33,9 @@ public class SentenceListActivity extends AppCompatActivity {
     private SharedPreferences sharedPreferences;
     private static final String PREFS_NAME = "SentencesPrefs";
     private static final String SENTENCES_KEY = "Sentences";
-    private ArrayAdapter<String> adapter;
-    private List<String> sentenceList;
-    private List<String> fullSentenceList;
+    private ArrayAdapter<SpannableString> adapter;
+    private List<SpannableString> sentenceList;
+    private List<SpannableString> fullSentenceList;
     private Button buttonBack;
     private Gson gson = new Gson();
 
@@ -96,8 +100,8 @@ public class SentenceListActivity extends AppCompatActivity {
         if (TextUtils.isEmpty(query)) {
             sentenceList.addAll(fullSentenceList);
         } else {
-            for (String sentenceSet : fullSentenceList) {
-                if (sentenceSet.toLowerCase().contains(query.toLowerCase())) {
+            for (SpannableString sentenceSet : fullSentenceList) {
+                if (sentenceSet.toString().toLowerCase().contains(query.toLowerCase())) {
                     sentenceList.add(sentenceSet);
                 }
             }
@@ -106,32 +110,39 @@ public class SentenceListActivity extends AppCompatActivity {
     }
 
     // 문장 세트 불러오기
-    private List<String> loadSentenceSets() {
+    private List<SpannableString> loadSentenceSets() {
         try {
-            // Set<String> 형태로 저장된 데이터를 불러오려고 시도
             if (sharedPreferences.contains(SENTENCES_KEY)) {
-                Object storedValue = sharedPreferences.getAll().get(SENTENCES_KEY);
-
-                // 기존 데이터가 String 형태로 저장되었을 경우 처리
-                if (storedValue instanceof String) {
-                    String oldStringValue = (String) storedValue;
-                    Log.d(TAG, "loadSentenceSets: Found old String format, converting to Set<String>");
-
-                    // 기존 String 데이터를 Set<String>으로 변환
-                    Set<String> sentenceSets = new HashSet<>();
-                    sentenceSets.add(oldStringValue);
-
-                    // 변환된 데이터를 다시 Set<String>으로 SharedPreferences에 저장
-                    sharedPreferences.edit().putStringSet(SENTENCES_KEY, sentenceSets).apply();
-                }
-
-                // Set<String> 데이터를 불러옴
                 Set<String> sentenceSets = sharedPreferences.getStringSet(SENTENCES_KEY, new HashSet<>());
-                List<String> sentenceList = new ArrayList<>();
+                List<SpannableString> sentenceList = new ArrayList<>();
+
                 for (String sentenceSet : sentenceSets) {
                     String[] parts = sentenceSet.split("///");
                     if (parts.length == 2) {
-                        sentenceList.add("English: " + parts[0] + "\nKorean: " + parts[1]);
+                        String englishSentence = parts[0];
+                        String koreanTranslation = parts[1];
+
+                        // SpannableString으로 각 텍스트의 색상 적용
+                        SpannableString spannableString = new SpannableString(englishSentence + "\n" + koreanTranslation);
+
+                        // 영어 부분에 #000000 적용
+                        spannableString.setSpan(
+                                new ForegroundColorSpan(Color.parseColor("#000000")),
+                                0,
+                                englishSentence.length(),
+                                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                        );
+
+                        // 한국어 부분에 #999999 적용
+                        spannableString.setSpan(
+                                new ForegroundColorSpan(Color.parseColor("#999999")),
+                                englishSentence.length() + 1, // 한 줄 바꿈 이후
+                                spannableString.length(),
+                                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                        );
+
+                        // 리스트에 추가
+                        sentenceList.add(spannableString);
                     }
                 }
                 Log.d(TAG, "loadSentenceSets: Loaded " + sentenceList.size() + " sentences.");
@@ -144,7 +155,7 @@ public class SentenceListActivity extends AppCompatActivity {
     }
 
     private void showCRUDDialog(int position) {
-        final String selectedSentenceSet = sentenceList.get(position);
+        final SpannableString selectedSentenceSet = sentenceList.get(position);
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Choose action");
 
@@ -160,8 +171,8 @@ public class SentenceListActivity extends AppCompatActivity {
     }
 
     private void showEditDialog(int position) {
-        final String selectedSentenceSet = sentenceList.get(position);
-        String[] parts = selectedSentenceSet.replace("English: ", "").replace("Korean: ", "").split("\n");
+        final SpannableString selectedSentenceSet = sentenceList.get(position);
+        String[] parts = selectedSentenceSet.toString().split("\n");
 
         final EditText editSentence = new EditText(this);
         editSentence.setHint("English Sentence");
@@ -196,8 +207,26 @@ public class SentenceListActivity extends AppCompatActivity {
     }
 
     private void updateSentenceSet(int position, String newSentence, String newTranslation) {
-        sentenceList.set(position, "English: " + newSentence + "\nKorean: " + newTranslation);
-        fullSentenceList.set(position, "English: " + newSentence + "\nKorean: " + newTranslation);
+        SpannableString updatedSentence = new SpannableString(newSentence + "\n" + newTranslation);
+
+        // 영어 부분에 #000000 적용
+        updatedSentence.setSpan(
+                new ForegroundColorSpan(Color.parseColor("#000000")),
+                0,
+                newSentence.length(),
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+        );
+
+        // 한국어 부분에 #999999 적용
+        updatedSentence.setSpan(
+                new ForegroundColorSpan(Color.parseColor("#999999")),
+                newSentence.length() + 1,
+                updatedSentence.length(),
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+        );
+
+        sentenceList.set(position, updatedSentence);
+        fullSentenceList.set(position, updatedSentence);
         adapter.notifyDataSetChanged();
 
         saveSentenceSets();
@@ -216,8 +245,8 @@ public class SentenceListActivity extends AppCompatActivity {
     private void saveSentenceSets() {
         try {
             Set<String> sentenceSets = new HashSet<>();
-            for (String sentence : fullSentenceList) {
-                String[] parts = sentence.replace("English: ", "").replace("\nKorean: ", "///").split("///");
+            for (SpannableString sentence : fullSentenceList) {
+                String[] parts = sentence.toString().split("\n");
                 if (parts.length == 2) {
                     sentenceSets.add(parts[0] + "///" + parts[1]);
                 }

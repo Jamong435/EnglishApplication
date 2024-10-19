@@ -3,6 +3,7 @@ package com.no.mypocketenglish;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -10,8 +11,11 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -32,16 +36,15 @@ public class MainActivity extends AppCompatActivity {
     private SharedPreferences sharedPreferences;
     private static final String PREFS_NAME = "SentencesPrefs";
     private static final String SENTENCES_KEY = "Sentences";
-    private List<String> sentenceList;  // 전체 문장 리스트
-    private List<String> testList;  // 테스트 시 사용할 문장 리스트
+    private List<String> sentenceList;
+    private List<String> testList;
     private Random random;
-    private String currentSentenceSet = ""; // 현재 테스트 중인 문장
+    private String currentSentenceSet = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // 시스템 알림창 권한 요청
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
             showPermissionDialog();
         } else {
@@ -103,15 +106,12 @@ public class MainActivity extends AppCompatActivity {
         sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         random = new Random();
 
-        // 문장 불러오기
         sentenceList = loadSentenceSets();
 
-        // 저장된 문장이 없으면 빈 리스트로 초기화
         if (sentenceList.isEmpty()) {
             sentenceList = new ArrayList<>();
         }
 
-        // 테스트 시작 시 사용할 리스트 초기화
         resetTestList();
 
         buttonSave.setOnClickListener(new View.OnClickListener() {
@@ -138,15 +138,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // "테스트 시작" 버튼 클릭 리스너
         buttonStartTest.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showTestDialog();  // 다이얼로그 형식으로 테스트 시작
+                showTestDialog();
             }
         });
 
-        // "답지 확인" 버튼 클릭 리스너
         buttonShowAnswer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -155,24 +153,32 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    // 다이얼로그 형식으로 테스트를 보여주는 메서드
-    private void showTestDialog() {
-        // 다이얼로그 생성
-        final Dialog dialog = new Dialog(MainActivity.this);
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE); // 타이틀 제거
-        dialog.setContentView(R.layout.dialog_test); // 다이얼로그 레이아웃 설정
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            View view = getCurrentFocus();
+            if (view != null) {
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                view.clearFocus();
+            }
+        }
+        return super.onTouchEvent(event);
+    }
 
-        // 다이얼로그 내부의 요소들 참조
+    private void showTestDialog() {
+        final Dialog dialog = new Dialog(MainActivity.this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_test);
+
         TextView textViewQuestion = dialog.findViewById(R.id.textViewQuestion);
         Button buttonShowAnswer = dialog.findViewById(R.id.buttonShowAnswer);
         TextView textViewAnswer = dialog.findViewById(R.id.textViewAnswer);
-        Button buttonNextQuestion = dialog.findViewById(R.id.buttonNextQuestion);  // 다음 문제 버튼
+        Button buttonNextQuestion = dialog.findViewById(R.id.buttonNextQuestion);
         Button buttonClose = dialog.findViewById(R.id.buttonClose);
 
-        // 랜덤 문장 선택 후 다이얼로그에 표시
         startTest(textViewQuestion, textViewAnswer);
 
-        // 답을 보여주는 버튼 클릭 리스너
         buttonShowAnswer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -180,29 +186,31 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // 다음 문제를 불러오는 버튼 클릭 리스너
         buttonNextQuestion.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startTest(textViewQuestion, textViewAnswer);  // 다음 문제로 업데이트
+                startTest(textViewQuestion, textViewAnswer);
             }
         });
 
-        // 다이얼로그 닫기 버튼 클릭 리스너
         buttonClose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dialog.dismiss(); // 다이얼로그 닫기
+                dialog.dismiss();
             }
         });
 
-        dialog.show(); // 다이얼로그 표시
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT);
+            dialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        }
+
+        dialog.show();
     }
 
-    // 다이얼로그에서 테스트 문장 시작
     private void startTest(TextView textViewQuestion, TextView textViewAnswer) {
-        sentenceList = loadSentenceSets(); // 최신 데이터를 다시 로드
-        resetTestList();  // 테스트 리스트 초기화
+        sentenceList = loadSentenceSets();
+        resetTestList();
 
         if (!testList.isEmpty()) {
             int randomIndex = random.nextInt(testList.size());
@@ -210,8 +218,8 @@ public class MainActivity extends AppCompatActivity {
 
             String[] parts = currentSentenceSet.split("///");
             if (parts.length == 2) {
-                textViewQuestion.setText(parts[0]);  // 영어 문장 표시
-                textViewAnswer.setText("");  // 답은 숨김
+                textViewQuestion.setText(parts[0]);
+                textViewAnswer.setText("");
             } else {
                 textViewQuestion.setText("No valid sentence found.");
             }
@@ -220,40 +228,35 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // 다이얼로그에서 답을 보여주는 메서드
     private void showAnswer(TextView textViewAnswer) {
         if (!currentSentenceSet.isEmpty()) {
             String[] parts = currentSentenceSet.split("///");
             if (parts.length == 2) {
-                textViewAnswer.setText(parts[1]);  // 한국어 뜻 표시
-                textViewAnswer.setVisibility(View.VISIBLE); // 답 보이게 설정
+                textViewAnswer.setText(parts[1]);
+                textViewAnswer.setVisibility(View.VISIBLE);
             } else {
                 textViewAnswer.setText("No answer available.");
-                textViewAnswer.setVisibility(View.VISIBLE); // 답 보이게 설정
+                textViewAnswer.setVisibility(View.VISIBLE);
             }
         } else {
             Toast.makeText(this, "No answer available.", Toast.LENGTH_SHORT).show();
         }
     }
 
-    // 문장을 저장하는 메서드
     private void saveSentenceSet(String sentence, String translation) {
         Set<String> sentenceSets = sharedPreferences.getStringSet(SENTENCES_KEY, new HashSet<>());
         sentenceSets.add(sentence + "///" + translation);
         sharedPreferences.edit().putStringSet(SENTENCES_KEY, sentenceSets).commit();
 
-        // 새 문장 저장 후 리스트 업데이트
         sentenceList = loadSentenceSets();
         resetTestList();
     }
 
-    // 문장을 불러오는 메서드
     private List<String> loadSentenceSets() {
         Set<String> sentenceSets = sharedPreferences.getStringSet(SENTENCES_KEY, new HashSet<>());
         return new ArrayList<>(sentenceSets);
     }
 
-    // 테스트 리스트 초기화 (모든 문장 포함)
     private void resetTestList() {
         testList = new ArrayList<>(sentenceList);
     }

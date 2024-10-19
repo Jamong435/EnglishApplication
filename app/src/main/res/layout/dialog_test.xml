@@ -1,19 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="24dp">
+    android:layout_height="match_parent"
+    android:padding="16dp">
 
     <!-- 질문을 보여주는 TextView -->
     <TextView
         android:id="@+id/textViewQuestion"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:paddingTop="70dp"
         android:text="Your question will appear here"
         android:textSize="18sp"
         android:textColor="@android:color/black"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginBottom="16dp"
         android:gravity="center"/>
 
@@ -25,43 +29,51 @@
         android:text="Your answer will appear here"
         android:textSize="18sp"
         android:textColor="@android:color/holo_green_dark"
+        app:layout_constraintTop_toBottomOf="@id/textViewQuestion"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginBottom="16dp"
         android:gravity="center"
         android:visibility="gone"/>
 
-    <!-- 답지 확인 버튼 -->
-    <Button
-        android:id="@+id/buttonShowAnswer"
-        android:layout_width="wrap_content"
+    <!-- 버튼 영역을 아래쪽에 배치, 수직으로 버튼 정렬 -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Show Answer"
-        android:padding="12dp"
-        android:backgroundTint="@color/teal_700"
-        android:textColor="@android:color/white"
-        android:layout_gravity="center"
-        android:layout_marginBottom="16dp"/>
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:gravity="center"
+        android:layout_marginTop="20dp">
 
-    <!-- 다음 문제 버튼 -->
-    <Button
-        android:id="@+id/buttonNextQuestion"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Next Question"
-        android:padding="12dp"
-        android:backgroundTint="@color/teal_700"
-        android:textColor="@android:color/white"
-        android:layout_gravity="center"
-        android:layout_marginBottom="16dp"/>
+        <!-- 답지 확인 버튼 -->
+        <Button
+            android:id="@+id/buttonShowAnswer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Show Answer"
+            android:padding="12dp"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="10dp"/>
 
-    <!-- 닫기 버튼 -->
-    <Button
-        android:id="@+id/buttonClose"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Close"
-        android:padding="12dp"
-        android:backgroundTint="@color/teal_700"
-        android:textColor="@android:color/white"
-        android:layout_gravity="center"/>
+        <!-- 다음 문제 버튼 -->
+        <Button
+            android:id="@+id/buttonNextQuestion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Next Question"
+            android:padding="12dp"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="10dp"/>
 
-</LinearLayout>
+        <!-- 닫기 버튼 -->
+        <Button
+            android:id="@+id/buttonClose"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Close"
+            android:textColor="@android:color/white"/>
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
