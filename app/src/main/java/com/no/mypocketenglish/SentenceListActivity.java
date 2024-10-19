@@ -1,7 +1,5 @@
 package com.no.mypocketenglish;
 
-import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -19,25 +17,26 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 
-import com.google.gson.Gson;
-
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class SentenceListActivity extends AppCompatActivity {
 
     private static final String TAG = "SentenceListActivity";
+    private static final String FILE_NAME = "sentence_data.txt";
     private ListView listView;
-    private SharedPreferences sharedPreferences;
-    private static final String PREFS_NAME = "SentencesPrefs";
-    private static final String SENTENCES_KEY = "Sentences";
     private ArrayAdapter<SpannableString> adapter;
     private List<SpannableString> sentenceList;
     private List<SpannableString> fullSentenceList;
     private Button buttonBack;
-    private Gson gson = new Gson();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +45,6 @@ public class SentenceListActivity extends AppCompatActivity {
 
         listView = findViewById(R.id.listView);
         SearchView searchView = findViewById(R.id.searchView);
-        sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         buttonBack = findViewById(R.id.buttonBack);
 
         Log.d(TAG, "onCreate: App started, initializing data");
@@ -111,47 +109,45 @@ public class SentenceListActivity extends AppCompatActivity {
 
     // 문장 세트 불러오기
     private List<SpannableString> loadSentenceSets() {
-        try {
-            if (sharedPreferences.contains(SENTENCES_KEY)) {
-                Set<String> sentenceSets = sharedPreferences.getStringSet(SENTENCES_KEY, new HashSet<>());
-                List<SpannableString> sentenceList = new ArrayList<>();
+        List<SpannableString> sentenceList = new ArrayList<>();
+        try (FileInputStream fis = openFileInput(FILE_NAME);
+             InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
+             BufferedReader reader = new BufferedReader(isr)) {
 
-                for (String sentenceSet : sentenceSets) {
-                    String[] parts = sentenceSet.split("///");
-                    if (parts.length == 2) {
-                        String englishSentence = parts[0];
-                        String koreanTranslation = parts[1];
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split("///");
+                if (parts.length == 2) {
+                    String englishSentence = parts[0];
+                    String koreanTranslation = parts[1];
 
-                        // SpannableString으로 각 텍스트의 색상 적용
-                        SpannableString spannableString = new SpannableString(englishSentence + "\n" + koreanTranslation);
+                    // SpannableString으로 각 텍스트의 색상 적용
+                    SpannableString spannableString = new SpannableString(englishSentence + "\n" + koreanTranslation);
 
-                        // 영어 부분에 #000000 적용
-                        spannableString.setSpan(
-                                new ForegroundColorSpan(Color.parseColor("#000000")),
-                                0,
-                                englishSentence.length(),
-                                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                        );
+                    // 영어 부분에 #000000 적용
+                    spannableString.setSpan(
+                            new ForegroundColorSpan(android.graphics.Color.parseColor("#000000")),
+                            0,
+                            englishSentence.length(),
+                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    );
 
-                        // 한국어 부분에 #999999 적용
-                        spannableString.setSpan(
-                                new ForegroundColorSpan(Color.parseColor("#999999")),
-                                englishSentence.length() + 1, // 한 줄 바꿈 이후
-                                spannableString.length(),
-                                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                        );
+                    // 한국어 부분에 #999999 적용
+                    spannableString.setSpan(
+                            new ForegroundColorSpan(android.graphics.Color.parseColor("#999999")),
+                            englishSentence.length() + 1, // 한 줄 바꿈 이후
+                            spannableString.length(),
+                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    );
 
-                        // 리스트에 추가
-                        sentenceList.add(spannableString);
-                    }
+                    // 리스트에 추가
+                    sentenceList.add(spannableString);
                 }
-                Log.d(TAG, "loadSentenceSets: Loaded " + sentenceList.size() + " sentences.");
-                return sentenceList;
             }
-        } catch (Exception e) {
-            Log.e(TAG, "loadSentenceSets: Error loading sentence sets", e);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        return new ArrayList<>();
+        return sentenceList;
     }
 
     private void showCRUDDialog(int position) {
@@ -211,7 +207,7 @@ public class SentenceListActivity extends AppCompatActivity {
 
         // 영어 부분에 #000000 적용
         updatedSentence.setSpan(
-                new ForegroundColorSpan(Color.parseColor("#000000")),
+                new ForegroundColorSpan(android.graphics.Color.parseColor("#000000")),
                 0,
                 newSentence.length(),
                 Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
@@ -219,7 +215,7 @@ public class SentenceListActivity extends AppCompatActivity {
 
         // 한국어 부분에 #999999 적용
         updatedSentence.setSpan(
-                new ForegroundColorSpan(Color.parseColor("#999999")),
+                new ForegroundColorSpan(android.graphics.Color.parseColor("#999999")),
                 newSentence.length() + 1,
                 updatedSentence.length(),
                 Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
@@ -243,20 +239,19 @@ public class SentenceListActivity extends AppCompatActivity {
     }
 
     private void saveSentenceSets() {
-        try {
-            Set<String> sentenceSets = new HashSet<>();
+        try (FileOutputStream fos = openFileOutput(FILE_NAME, MODE_PRIVATE);
+             OutputStreamWriter osw = new OutputStreamWriter(fos, StandardCharsets.UTF_8);
+             BufferedWriter writer = new BufferedWriter(osw)) {
+
             for (SpannableString sentence : fullSentenceList) {
                 String[] parts = sentence.toString().split("\n");
                 if (parts.length == 2) {
-                    sentenceSets.add(parts[0] + "///" + parts[1]);
+                    writer.write(parts[0] + "///" + parts[1]);
+                    writer.newLine();  // 줄바꿈 추가
                 }
             }
-
-            Log.d(TAG, "saveSentenceSets: Saving " + sentenceSets.size() + " sentences");
-            sharedPreferences.edit().putStringSet(SENTENCES_KEY, sentenceSets).apply();
-
-        } catch (Exception e) {
-            Log.e(TAG, "saveSentenceSets: Error saving sentence sets", e);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

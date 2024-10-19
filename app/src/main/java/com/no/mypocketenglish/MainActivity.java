@@ -6,7 +6,6 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -29,21 +28,21 @@ import com.google.mlkit.common.model.RemoteModelManager;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.OnFailureListener;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final int SYSTEM_ALERT_WINDOW_PERMISSION = 2084;
     private EditText editTextSentence, editTextTranslation;
     private Button buttonSave, buttonList, buttonStartTest, buttonShowAnswer;
     private TextView textViewQuestion, textViewAnswer;
-    private SharedPreferences sharedPreferences;
-    private static final String PREFS_NAME = "SentencesPrefs";
-    private static final String SENTENCES_KEY = "Sentences";
     private List<String> sentenceList;
     private List<String> testList;
     private Random random;
@@ -52,54 +51,13 @@ public class MainActivity extends AppCompatActivity {
     // Translator 객체
     private Translator englishKoreanTranslator;
 
+    // Internal Storage 파일명
+    private static final String FILE_NAME = "sentence_data.txt";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
-            showPermissionDialog();
-        } else {
-            startApp();
-        }
-    }
-
-    private void showPermissionDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("권한 요청");
-        builder.setMessage("이 앱을 사용하려면 '다른 앱 위에 표시' 권한이 필요합니다. 권한을 허용하시겠습니까?");
-        builder.setPositiveButton("허용", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                requestOverlayPermission();
-            }
-        });
-        builder.setNegativeButton("취소", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                Toast.makeText(MainActivity.this, "권한이 없으면 앱을 사용할 수 없습니다.", Toast.LENGTH_SHORT).show();
-                finish();
-            }
-        });
-        builder.show();
-    }
-
-    private void requestOverlayPermission() {
-        Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                Uri.parse("package:" + getPackageName()));
-        startActivityForResult(intent, SYSTEM_ALERT_WINDOW_PERMISSION);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == SYSTEM_ALERT_WINDOW_PERMISSION) {
-            if (Settings.canDrawOverlays(this)) {
-                startApp();
-            } else {
-                Toast.makeText(this, "SYSTEM_ALERT_WINDOW 권한이 필요합니다.", Toast.LENGTH_SHORT).show();
-                finish();
-            }
-        }
-        super.onActivityResult(requestCode, resultCode, data);
+        startApp();
     }
 
     private void startApp() {
@@ -114,10 +72,8 @@ public class MainActivity extends AppCompatActivity {
         textViewQuestion = findViewById(R.id.textViewQuestion);
         textViewAnswer = findViewById(R.id.textViewAnswer);
 
-        sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         random = new Random();
-
-        sentenceList = loadSentenceSets();
+        sentenceList = loadSentenceSets(); // 파일에서 데이터 로드
 
         if (sentenceList.isEmpty()) {
             sentenceList = new ArrayList<>();
@@ -132,33 +88,17 @@ public class MainActivity extends AppCompatActivity {
                 .build();
         englishKoreanTranslator = com.google.mlkit.nl.translate.Translation.getClient(options);
 
-        // 번역 모델 다운로드 (인터넷 연결 시)
-        DownloadConditions conditions = new DownloadConditions.Builder()
-                .requireWifi()
-                .build();
-
+        DownloadConditions conditions = new DownloadConditions.Builder().requireWifi().build();
         englishKoreanTranslator.downloadModelIfNeeded(conditions)
-                .addOnSuccessListener(
-                        new OnSuccessListener<Void>() {
-                            @Override
-                            public void onSuccess(Void v) {
-                                Toast.makeText(MainActivity.this, "번역 모델 다운로드 완료", Toast.LENGTH_SHORT).show();
-                            }
-                        })
-                .addOnFailureListener(
-                        new OnFailureListener() {
-                            @Override
-                            public void onFailure(Exception e) {
-                                Toast.makeText(MainActivity.this, "번역 모델 다운로드 실패", Toast.LENGTH_SHORT).show();
-                            }
-                        });
+                .addOnSuccessListener(aVoid -> Toast.makeText(MainActivity.this, "번역 모델 다운로드 완료", Toast.LENGTH_SHORT).show())
+                .addOnFailureListener(e -> Toast.makeText(MainActivity.this, "번역 모델 다운로드 실패", Toast.LENGTH_SHORT).show());
 
         editTextSentence.addTextChangedListener(new android.text.TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) { }
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
 
             @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) { }
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
 
             @Override
             public void afterTextChanged(android.text.Editable editable) {
@@ -166,60 +106,34 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        buttonSave.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String sentence = editTextSentence.getText().toString().trim();
-                String translation = editTextTranslation.getText().toString().trim();
-                if (!sentence.isEmpty() && !translation.isEmpty()) {
-                    saveSentenceSet(sentence, translation);
-                    editTextSentence.setText("");
-                    editTextTranslation.setText("");
-                    Toast.makeText(MainActivity.this, "Sentence set saved!", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(MainActivity.this, "Please enter both the sentence and its meaning.", Toast.LENGTH_SHORT).show();
-                }
+        buttonSave.setOnClickListener(v -> {
+            String sentence = editTextSentence.getText().toString().trim();
+            String translation = editTextTranslation.getText().toString().trim();
+            if (!sentence.isEmpty() && !translation.isEmpty()) {
+                saveSentenceSet(sentence, translation);
+                editTextSentence.setText("");
+                editTextTranslation.setText("");
+                Toast.makeText(MainActivity.this, "Sentence set saved!", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(MainActivity.this, "Please enter both the sentence and its meaning.", Toast.LENGTH_SHORT).show();
             }
         });
 
-        buttonList.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, SentenceListActivity.class);
-                startActivity(intent);
-            }
+        buttonList.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, SentenceListActivity.class);
+            startActivity(intent);
         });
 
-        buttonStartTest.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showTestDialog();
-            }
-        });
+        buttonStartTest.setOnClickListener(v -> showTestDialog());
 
-        buttonShowAnswer.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showAnswer(textViewAnswer);
-            }
-        });
+        buttonShowAnswer.setOnClickListener(v -> showAnswer(textViewAnswer));
     }
 
     // 번역 함수
     private void translateText(String text) {
         englishKoreanTranslator.translate(text)
-                .addOnSuccessListener(new OnSuccessListener<String>() {
-                    @Override
-                    public void onSuccess(String translatedText) {
-                        editTextTranslation.setText(translatedText);
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(Exception e) {
-                        Toast.makeText(MainActivity.this, "번역 실패", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                .addOnSuccessListener(translatedText -> editTextTranslation.setText(translatedText))
+                .addOnFailureListener(e -> Toast.makeText(MainActivity.this, "번역 실패", Toast.LENGTH_SHORT).show());
     }
 
     @Override
@@ -248,26 +162,11 @@ public class MainActivity extends AppCompatActivity {
 
         startTest(textViewQuestion, textViewAnswer);
 
-        buttonShowAnswer.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showAnswer(textViewAnswer);
-            }
-        });
+        buttonShowAnswer.setOnClickListener(v -> showAnswer(textViewAnswer));
 
-        buttonNextQuestion.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startTest(textViewQuestion, textViewAnswer);
-            }
-        });
+        buttonNextQuestion.setOnClickListener(v -> startTest(textViewQuestion, textViewAnswer));
 
-        buttonClose.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialog.dismiss();
-            }
-        });
+        buttonClose.setOnClickListener(v -> dialog.dismiss());
 
         if (dialog.getWindow() != null) {
             dialog.getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT);
@@ -312,18 +211,33 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // 문장을 파일에 저장하는 메서드
     private void saveSentenceSet(String sentence, String translation) {
-        Set<String> sentenceSets = sharedPreferences.getStringSet(SENTENCES_KEY, new HashSet<>());
-        sentenceSets.add(sentence + "///" + translation);
-        sharedPreferences.edit().putStringSet(SENTENCES_KEY, sentenceSets).commit();
-
-        sentenceList = loadSentenceSets();
-        resetTestList();
+        sentenceList.add(sentence + "///" + translation);
+        try (FileOutputStream fos = openFileOutput(FILE_NAME, Context.MODE_PRIVATE)) {
+            for (String entry : sentenceList) {
+                fos.write((entry + "\n").getBytes());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
+    // 문장을 파일에서 불러오는 메서드
     private List<String> loadSentenceSets() {
-        Set<String> sentenceSets = sharedPreferences.getStringSet(SENTENCES_KEY, new HashSet<>());
-        return new ArrayList<>(sentenceSets);
+        List<String> sentenceSets = new ArrayList<>();
+        try (FileInputStream fis = openFileInput(FILE_NAME);
+             InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
+             BufferedReader reader = new BufferedReader(isr)) {
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sentenceSets.add(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return sentenceSets;
     }
 
     private void resetTestList() {
