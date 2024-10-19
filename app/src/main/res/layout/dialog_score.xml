@@ -26,7 +26,7 @@
         android:layout_height="200dp"
         android:layout_marginTop="16dp"
         android:contentDescription="Reward Image"
-        android:src="@drawable/test"
+        android:src="@drawable/egg"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
