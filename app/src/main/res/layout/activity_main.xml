@@ -32,7 +32,6 @@
         android:hint="English"
         android:padding="10dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.842"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/imageView" />
 
@@ -91,6 +90,37 @@
         app:layout_constraintBottom_toTopOf="@id/buttonStartGame"
         app:layout_constraintVertical_chainStyle="packed"/>
 
+    <!-- 답지 확인 버튼 추가 -->
+    <Button
+        android:id="@+id/buttonShowAnswer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Show Answer"
+        app:layout_constraintTop_toBottomOf="@id/buttonStartTest"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- 한국어 번역 결과 보여주는 TextView 추가 -->
+    <TextView
+        android:id="@+id/textViewAnswer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/buttonShowAnswer"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- 영어 문장 보여주는 TextView 추가 -->
+    <TextView
+        android:id="@+id/textViewQuestion"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        app:layout_constraintTop_toBottomOf="@id/textViewAnswer"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
     <!-- 게임 시작 버튼을 하단에 배치 -->
     <Button
         android:id="@+id/buttonStartGame"
@@ -102,52 +132,16 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/buttonStartTest"
-        app:layout_constraintBottom_toTopOf="@id/textViewScore" />
+        app:layout_constraintBottom_toTopOf="@+id/buttonShowScore" />
 
-    <!-- 영어 문장 표시 -->
-    <TextView
-        android:id="@+id/textViewQuestion"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="18sp"
-        android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/buttonStartTest"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <!-- 답지 확인 버튼 -->
+    <!-- 총점 확인 버튼 -->
     <Button
-        android:id="@+id/buttonShowAnswer"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="답지 확인"
-        android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/textViewQuestion"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <!-- 한국어 번역 표시 -->
-    <TextView
-        android:id="@+id/textViewAnswer"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="18sp"
-        android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/buttonShowAnswer"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <!-- 쌓인 점수를 표시할 TextView -->
-    <TextView
-        android:id="@+id/textViewScore"
+        android:id="@+id/buttonShowScore"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Score: 0"
-        android:textSize="18sp"
-        android:layout_marginTop="16dp"
+        android:text="Show Total Score"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
-        android:gravity="center"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"/>

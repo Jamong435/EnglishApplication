@@ -36,8 +36,8 @@ import java.util.Random;
 public class MainActivity extends AppCompatActivity {
 
     private EditText editTextSentence, editTextTranslation;
-    private Button buttonSave, buttonList, buttonStartTest, buttonShowAnswer, buttonStartGame;
-    private TextView textViewQuestion, textViewAnswer, textViewScore;
+    private Button buttonSave, buttonList, buttonStartTest, buttonShowAnswer, buttonStartGame, buttonShowScore;
+    private TextView textViewQuestion, textViewAnswer;
     private List<String> sentenceList;
     private List<String> testList;
     private Random random;
@@ -56,23 +56,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
         // 총점 로드
         totalScore = loadTotalScore();
 
-        // 레이아웃 설정
-        startApp();
-
-        // 점수 표시 TextView 설정
-        textViewScore = findViewById(R.id.textViewScore);
-        updateScoreTextView(); // 시작 시 총점 표시
-
-        Toast.makeText(MainActivity.this, "Current Total Score: " + totalScore, Toast.LENGTH_SHORT).show();
-    }
-
-    private void startApp() {
-        setContentView(R.layout.activity_main);
-
+        // 뷰 초기화
         editTextSentence = findViewById(R.id.editTextSentence);
         editTextTranslation = findViewById(R.id.editTextTranslation);
         buttonSave = findViewById(R.id.buttonSave);
@@ -80,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
         buttonStartTest = findViewById(R.id.buttonStartTest);
         buttonShowAnswer = findViewById(R.id.buttonShowAnswer);
         buttonStartGame = findViewById(R.id.buttonStartGame);
+        buttonShowScore = findViewById(R.id.buttonShowScore);
         textViewQuestion = findViewById(R.id.textViewQuestion);
         textViewAnswer = findViewById(R.id.textViewAnswer);
 
@@ -101,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
 
         DownloadConditions conditions = new DownloadConditions.Builder().requireWifi().build();
         englishKoreanTranslator.downloadModelIfNeeded(conditions)
-                .addOnSuccessListener(aVoid -> Toast.makeText(MainActivity.this, "How are you doing :)", Toast.LENGTH_SHORT).show());
+                .addOnSuccessListener(aVoid -> Toast.makeText(MainActivity.this, "Translation model downloaded", Toast.LENGTH_SHORT).show());
 
         editTextSentence.addTextChangedListener(new android.text.TextWatcher() {
             @Override
@@ -140,6 +130,9 @@ public class MainActivity extends AppCompatActivity {
 
         // 게임 시작 버튼
         buttonStartGame.setOnClickListener(v -> showGameDialog());
+
+        // 총점 버튼을 눌렀을 때 다이얼로그 표시
+        buttonShowScore.setOnClickListener(v -> showScoreDialog());
     }
 
     // 번역 함수
@@ -154,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
                     );
                     editTextTranslation.setText(spannableTranslation);
                 })
-                .addOnFailureListener(e -> Toast.makeText(MainActivity.this, "Translation failed:(", Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> Toast.makeText(MainActivity.this, "Translation failed", Toast.LENGTH_SHORT).show());
     }
 
     @Override
@@ -186,7 +179,7 @@ public class MainActivity extends AppCompatActivity {
         startGame(textViewQuestion, buttonOption1, buttonOption2, buttonOption3, buttonOption4);
 
         dialog.setOnDismissListener(dialogInterface -> {
-            Toast.makeText(MainActivity.this, "See you again :)", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "Game closed", Toast.LENGTH_SHORT).show();
         });
 
         if (dialog.getWindow() != null) {
@@ -224,11 +217,10 @@ public class MainActivity extends AppCompatActivity {
                             currentGameScore++;  // 이번 게임 점수 증가
                             totalScore++;  // 총점 증가
                             saveTotalScore(totalScore);
-                            updateScoreTextView();
-                            Toast.makeText(MainActivity.this, "OK ! Total Score: " + totalScore, Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, "Correct! Total Score: " + totalScore, Toast.LENGTH_SHORT).show();
                         } else {
                             currentGameScore = 0;  // 틀리면 이번 게임 점수만 0으로 리셋
-                            Toast.makeText(MainActivity.this, "Wrong answer:( ", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, "Wrong answer", Toast.LENGTH_SHORT).show();
                         }
                         startGame(textViewQuestion, options);
                     });
@@ -302,8 +294,20 @@ public class MainActivity extends AppCompatActivity {
                 textViewAnswer.setVisibility(View.VISIBLE);
             }
         } else {
-            Toast.makeText(this, "No answer available.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "No answer available", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    // 총점 다이얼로그를 보여주는 메서드
+    private void showScoreDialog() {
+        Dialog dialog = new Dialog(MainActivity.this);
+        dialog.setContentView(R.layout.dialog_score);
+
+        // 다이얼로그에서 총점 표시
+        TextView textViewTotalScore = dialog.findViewById(R.id.textViewTotalScore);
+        textViewTotalScore.setText("Total Score: " + totalScore);
+
+        dialog.show();
     }
 
     // 문장을 파일에 저장하는 메서드
@@ -363,10 +367,5 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
         return loadedTotalScore;
-    }
-
-    // 총점 및 이번 게임 점수를 업데이트하는 메서드
-    private void updateScoreTextView() {
-        textViewScore.setText("Total Score: " + totalScore);
     }
 }
