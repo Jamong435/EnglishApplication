@@ -22,9 +22,6 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <!-- 영어 문장 입력 -->
-
-    <!-- 한국어 번역 입력 -->
-
     <EditText
         android:id="@+id/editTextSentence"
         android:layout_width="0dp"
@@ -39,6 +36,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/imageView" />
 
+    <!-- 한국어 번역 입력 -->
     <EditText
         android:id="@+id/editTextTranslation"
         android:layout_width="0dp"
@@ -104,7 +102,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/buttonStartTest"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintBottom_toTopOf="@id/textViewScore" />
 
     <!-- 영어 문장 표시 -->
     <TextView
@@ -138,5 +136,20 @@
         app:layout_constraintTop_toBottomOf="@id/buttonShowAnswer"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- 쌓인 점수를 표시할 TextView -->
+    <TextView
+        android:id="@+id/textViewScore"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Score: 0"
+        android:textSize="18sp"
+        android:layout_marginTop="16dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:gravity="center"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

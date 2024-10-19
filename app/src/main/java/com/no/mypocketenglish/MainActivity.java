@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
-import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
@@ -16,7 +15,6 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -39,26 +37,38 @@ public class MainActivity extends AppCompatActivity {
 
     private EditText editTextSentence, editTextTranslation;
     private Button buttonSave, buttonList, buttonStartTest, buttonShowAnswer, buttonStartGame;
-    private TextView textViewQuestion, textViewAnswer;
+    private TextView textViewQuestion, textViewAnswer, textViewScore;
     private List<String> sentenceList;
     private List<String> testList;
     private Random random;
     private String currentSentenceSet = "";
     private String correctAnswer = "";
-    private int score = 0; // 점수 변수
+    private int totalScore = 0; // 총점 변수
+    private int currentGameScore = 0; // 이번 게임 점수 변수
 
     // Translator 객체
     private Translator englishKoreanTranslator;
 
     // Internal Storage 파일명
     private static final String FILE_NAME = "sentence_data.txt";
+    private static final String SCORE_FILE_NAME = "total_score_data.txt"; // 총점을 저장할 파일 이름
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        startApp();
-    }
 
+        // 총점 로드
+        totalScore = loadTotalScore();
+
+        // 레이아웃 설정
+        startApp();
+
+        // 점수 표시 TextView 설정
+        textViewScore = findViewById(R.id.textViewScore);
+        updateScoreTextView(); // 시작 시 총점 표시
+
+        Toast.makeText(MainActivity.this, "Current Total Score: " + totalScore, Toast.LENGTH_SHORT).show();
+    }
 
     private void startApp() {
         setContentView(R.layout.activity_main);
@@ -92,7 +102,6 @@ public class MainActivity extends AppCompatActivity {
         DownloadConditions conditions = new DownloadConditions.Builder().requireWifi().build();
         englishKoreanTranslator.downloadModelIfNeeded(conditions)
                 .addOnSuccessListener(aVoid -> Toast.makeText(MainActivity.this, "How are you doing :)", Toast.LENGTH_SHORT).show());
-
 
         editTextSentence.addTextChangedListener(new android.text.TextWatcher() {
             @Override
@@ -137,14 +146,13 @@ public class MainActivity extends AppCompatActivity {
     private void translateText(String text) {
         englishKoreanTranslator.translate(text)
                 .addOnSuccessListener(translatedText -> {
-                    // 번역된 텍스트에 색상을 적용하여 SpannableString으로 설정
                     SpannableString spannableTranslation = new SpannableString(translatedText);
                     spannableTranslation.setSpan(
-                            new ForegroundColorSpan(0xFF999999), // #999999 색상 적용
+                            new ForegroundColorSpan(0xFF999999),
                             0, spannableTranslation.length(),
                             Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
                     );
-                    editTextTranslation.setText(spannableTranslation); // 번역된 텍스트를 EditText에 설정
+                    editTextTranslation.setText(spannableTranslation);
                 })
                 .addOnFailureListener(e -> Toast.makeText(MainActivity.this, "Translation failed:(", Toast.LENGTH_SHORT).show());
     }
@@ -174,11 +182,10 @@ public class MainActivity extends AppCompatActivity {
         Button buttonOption3 = dialog.findViewById(R.id.buttonOption3);
         Button buttonOption4 = dialog.findViewById(R.id.buttonOption4);
 
+        currentGameScore = 0;  // 새로운 게임 시작 시, 이번 게임 점수는 0으로 리셋
         startGame(textViewQuestion, buttonOption1, buttonOption2, buttonOption3, buttonOption4);
 
-        // 다이얼로그 닫을 때 점수 리셋
         dialog.setOnDismissListener(dialogInterface -> {
-            score = 0;  // 다이얼로그 닫을 때 점수 리셋
             Toast.makeText(MainActivity.this, "See you again :)", Toast.LENGTH_SHORT).show();
         });
 
@@ -200,29 +207,30 @@ public class MainActivity extends AppCompatActivity {
             String[] parts = currentSentenceSet.split("///");
 
             if (parts.length == 2) {
-                final String correctAnswer = parts[1];  // 정답을 final로 선언
-                textViewQuestion.setText(parts[0]);  // 영어 문장 제시
+                final String correctAnswer = parts[1];
+                textViewQuestion.setText(parts[0]);
 
-                // 선택지 버튼에 랜덤하게 정답과 오답 설정
                 int correctButtonIndex = random.nextInt(4);
                 for (int i = 0; i < options.length; i++) {
-                    final int index = i;  // 반복문 인덱스값을 final로 선언
+                    final int index = i;
                     if (i == correctButtonIndex) {
-                        options[i].setText(correctAnswer);  // 정답 배치
+                        options[i].setText(correctAnswer);
                     } else {
-                        options[i].setText(generateWrongAnswer());  // 랜덤 오답 배치
+                        options[i].setText(generateWrongAnswer());
                     }
 
-                    // 선택지 클릭 리스너 설정
                     options[i].setOnClickListener(v -> {
                         if (options[index].getText().equals(correctAnswer)) {
-                            score++;
-                            Toast.makeText(MainActivity.this, "OK ! Score: " + score, Toast.LENGTH_SHORT).show();
+                            currentGameScore++;  // 이번 게임 점수 증가
+                            totalScore++;  // 총점 증가
+                            saveTotalScore(totalScore);
+                            updateScoreTextView();
+                            Toast.makeText(MainActivity.this, "OK ! Total Score: " + totalScore, Toast.LENGTH_SHORT).show();
                         } else {
-                            score = 0; // 오답일 때 점수 리셋
+                            currentGameScore = 0;  // 틀리면 이번 게임 점수만 0으로 리셋
                             Toast.makeText(MainActivity.this, "Wrong answer:( ", Toast.LENGTH_SHORT).show();
                         }
-                        startGame(textViewQuestion, options);  // 다음 문제로 이동
+                        startGame(textViewQuestion, options);
                     });
                 }
             }
@@ -231,9 +239,9 @@ public class MainActivity extends AppCompatActivity {
 
     private String generateWrongAnswer() {
         List<String> wrongAnswers = new ArrayList<>(sentenceList);
-        wrongAnswers.remove(currentSentenceSet);  // 현재 문장은 오답으로 제시되지 않게 제거
+        wrongAnswers.remove(currentSentenceSet);
         String randomWrongAnswer = wrongAnswers.get(random.nextInt(wrongAnswers.size()));
-        return randomWrongAnswer.split("///")[1];  // 랜덤하게 오답의 한국어 번역 부분 추출
+        return randomWrongAnswer.split("///")[1];
     }
 
     private void showTestDialog() {
@@ -329,5 +337,36 @@ public class MainActivity extends AppCompatActivity {
 
     private void resetTestList() {
         testList = new ArrayList<>(sentenceList);
+    }
+
+    // 총점을 파일에 저장하는 메서드
+    private void saveTotalScore(int newTotalScore) {
+        try (FileOutputStream fos = openFileOutput(SCORE_FILE_NAME, Context.MODE_PRIVATE)) {
+            fos.write(String.valueOf(newTotalScore).getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // 파일에서 총점을 불러오는 메서드
+    private int loadTotalScore() {
+        int loadedTotalScore = 0;
+        try (FileInputStream fis = openFileInput(SCORE_FILE_NAME);
+             InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
+             BufferedReader reader = new BufferedReader(isr)) {
+
+            String line = reader.readLine();
+            if (line != null) {
+                loadedTotalScore = Integer.parseInt(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return loadedTotalScore;
+    }
+
+    // 총점 및 이번 게임 점수를 업데이트하는 메서드
+    private void updateScoreTextView() {
+        textViewScore.setText("Total Score: " + totalScore);
     }
 }
