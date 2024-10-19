@@ -17,26 +17,25 @@
         android:layout_marginBottom="16dp"
         android:contentDescription="Description"
         android:src="@drawable/memory"
-        app:layout_constraintBottom_toTopOf="@id/editTextSentence"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <!-- 영어 문장 입력 -->
 
     <!-- 한국어 번역 입력 -->
+
     <EditText
         android:id="@+id/editTextSentence"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="120dp"
-        android:hint="English"
         android:layout_marginLeft="10dp"
+        android:layout_marginTop="108dp"
         android:layout_marginRight="10dp"
+        android:hint="English"
         android:padding="10dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="0.842"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/imageView" />
 
@@ -44,55 +43,68 @@
         android:id="@+id/editTextTranslation"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="20dp"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
         android:padding="10dp"
         android:hint="Mean"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/editTextSentence" />
 
-    <!-- 문장 저장 버튼 -->
+    <!-- 버튼들을 체인 방식으로 배치하여 아래로 배치 -->
     <Button
         android:id="@+id/buttonSave"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="56dp"
         android:text="Save"
+        android:textColor="@color/cardview_dark_background"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/editTextTranslation" />
+        app:layout_constraintTop_toBottomOf="@id/editTextTranslation"
+        app:layout_constraintBottom_toTopOf="@id/buttonList"
+        app:layout_constraintVertical_chainStyle="packed"/>
 
-    <!-- 리스트 버튼을 Save와 Test 사이에 배치 -->
     <Button
         android:id="@+id/buttonList"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
         android:text="List"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/buttonSave" />
+        app:layout_constraintTop_toBottomOf="@id/buttonSave"
+        app:layout_constraintBottom_toTopOf="@id/buttonStartTest"
+        app:layout_constraintVertical_chainStyle="packed"/>
 
-    <!-- 테스트 시작 버튼 -->
     <Button
         android:id="@+id/buttonStartTest"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Test"
+        android:text="Descriptive"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/buttonList" />
+        app:layout_constraintTop_toBottomOf="@id/buttonList"
+        app:layout_constraintBottom_toTopOf="@id/buttonStartGame"
+        app:layout_constraintVertical_chainStyle="packed"/>
+
+    <!-- 게임 시작 버튼을 하단에 배치 -->
+    <Button
+        android:id="@+id/buttonStartGame"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Subjective"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/buttonStartTest"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
     <!-- 영어 문장 표시 -->
     <TextView
@@ -101,7 +113,6 @@
         android:layout_height="wrap_content"
         android:textSize="18sp"
         android:visibility="gone"
-
         app:layout_constraintTop_toBottomOf="@id/buttonStartTest"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />

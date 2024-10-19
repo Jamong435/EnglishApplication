@@ -178,6 +178,10 @@ public class SentenceListActivity extends AppCompatActivity {
         editTranslation.setHint("Korean Translation");
         editTranslation.setText(parts[1]);
 
+        int paddingDp = (int) (16 * getResources().getDisplayMetrics().density); // dp를 픽셀로 변환
+        editSentence.setPadding(paddingDp, paddingDp, paddingDp, paddingDp);
+        editTranslation.setPadding(paddingDp, paddingDp, paddingDp, paddingDp);
+
         final android.widget.LinearLayout layout = new android.widget.LinearLayout(this);
         layout.setOrientation(android.widget.LinearLayout.VERTICAL);
         layout.addView(editSentence);
