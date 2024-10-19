@@ -21,6 +21,14 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.mlkit.nl.translate.TranslateLanguage;
+import com.google.mlkit.nl.translate.Translator;
+import com.google.mlkit.nl.translate.TranslatorOptions;
+import com.google.mlkit.common.model.DownloadConditions;
+import com.google.mlkit.common.model.RemoteModelManager;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.OnFailureListener;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -40,6 +48,9 @@ public class MainActivity extends AppCompatActivity {
     private List<String> testList;
     private Random random;
     private String currentSentenceSet = "";
+
+    // Translator 객체
+    private Translator englishKoreanTranslator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,6 +125,47 @@ public class MainActivity extends AppCompatActivity {
 
         resetTestList();
 
+        // 번역 옵션 설정 (영어 -> 한국어)
+        TranslatorOptions options = new TranslatorOptions.Builder()
+                .setSourceLanguage(TranslateLanguage.ENGLISH)
+                .setTargetLanguage(TranslateLanguage.KOREAN)
+                .build();
+        englishKoreanTranslator = com.google.mlkit.nl.translate.Translation.getClient(options);
+
+        // 번역 모델 다운로드 (인터넷 연결 시)
+        DownloadConditions conditions = new DownloadConditions.Builder()
+                .requireWifi()
+                .build();
+
+        englishKoreanTranslator.downloadModelIfNeeded(conditions)
+                .addOnSuccessListener(
+                        new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void v) {
+                                Toast.makeText(MainActivity.this, "번역 모델 다운로드 완료", Toast.LENGTH_SHORT).show();
+                            }
+                        })
+                .addOnFailureListener(
+                        new OnFailureListener() {
+                            @Override
+                            public void onFailure(Exception e) {
+                                Toast.makeText(MainActivity.this, "번역 모델 다운로드 실패", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+
+        editTextSentence.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) { }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) { }
+
+            @Override
+            public void afterTextChanged(android.text.Editable editable) {
+                translateText(editable.toString());
+            }
+        });
+
         buttonSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -151,6 +203,23 @@ public class MainActivity extends AppCompatActivity {
                 showAnswer(textViewAnswer);
             }
         });
+    }
+
+    // 번역 함수
+    private void translateText(String text) {
+        englishKoreanTranslator.translate(text)
+                .addOnSuccessListener(new OnSuccessListener<String>() {
+                    @Override
+                    public void onSuccess(String translatedText) {
+                        editTextTranslation.setText(translatedText);
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(Exception e) {
+                        Toast.makeText(MainActivity.this, "번역 실패", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     @Override
